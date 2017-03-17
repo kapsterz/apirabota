@@ -143,43 +143,44 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
               val updated = Try(body.select("#PersonalDataHolder > div:eq(1) > div > div:eq(1) > span").first().text()).toOption.getOrElse("Nema(")
               val education = Try(body.select("#EducationHolder").first().text()).toOption.getOrElse("Nema(")
               val experience = {
-                val expBody = {
-                  if (body.select("#ExperienceHolder *").size() > 2) {
-                    body.select("#ExperienceHolder *").first().remove()
-                    body.select("#ExperienceHolder *").first().remove()
-                    body.select("#ExperienceHolder *")
-                  } else {
-                    body.select("#ExperienceHolder *")
-                  }
-                }
-
-                def expFinder(expBody: Elements, expResult: Seq[Map[String, String]]): Seq[Map[String, String]] = {
-                  if (expBody.select("p.muted").isEmpty) {
-                    expResult
-                  } else {
-                    def expExtractor(newExpBody: Elements, expResults: Map[String, String], int: Int): (Map[String, String], Elements) = {
-                      if ((newExpBody.size == 0) && expBody.get(int).hasClass(".muted")) {
-                        newExpBody.first().remove()
-                        expResults -> newExpBody
-                      } else {
-                        println(newExpBody.first())
-                        newExpBody.first().remove()
-                        expExtractor(newExpBody, expResults + (int.toString -> expBody.get(int - 1).text()), int + 1)
-                      }
-                    }
-                    val res = expBody
-                    val t = {
-                      if (res.size() > 1)
-                        expExtractor(res, Map.empty[String, String], 2)
-                      else expExtractor(res, Map.empty[String, String], 1)
-                    }
-                    expFinder(t._2, expResult :+ (t._1 + ("0" -> expBody.get(0).text())))
-                  }
-                }
-
-                expFinder(expBody, Seq.empty[Map[String, String]])
+//                val expBody = {
+//                  if (body.select("#ExperienceHolder *").size() > 2) {
+//                    body.select("#ExperienceHolder *").first().remove()
+//                    body.select("#ExperienceHolder *").first().remove()
+//                    body.select("#ExperienceHolder *")
+//                  } else {
+//                    body.select("#ExperienceHolder *")
+//                  }
+//                }
+//
+//                def expFinder(expBody: Elements, expResult: Seq[Map[String, String]]): Seq[Map[String, String]] = {
+//                  if (expBody.select("p.muted").isEmpty) {
+//                    expResult
+//                  } else {
+//                    def expExtractor(newExpBody: Elements, expResults: Map[String, String], int: Int): (Map[String, String], Elements) = {
+//                      if ((newExpBody.size == 0) && expBody.get(int).hasClass(".muted")) {
+//                        newExpBody.first().remove()
+//                        expResults -> newExpBody
+//                      } else {
+//                        println(newExpBody.first())
+//                        newExpBody.first().remove()
+//                        expExtractor(newExpBody, expResults + (int.toString -> expBody.get(int - 1).text()), int + 1)
+//                      }
+//                    }
+//                    val res = expBody
+//                    val t = {
+//                      if (res.size() > 1)
+//                        expExtractor(res, Map.empty[String, String], 2)
+//                      else expExtractor(res, Map.empty[String, String], 1)
+//                    }
+//                    expFinder(t._2, expResult :+ (t._1 + ("0" -> expBody.get(0).text())))
+//                  }
+//                }
+//
+//                expFinder(expBody, Seq.empty[Map[String, String]])
+                body.select("#ExperienceHolder").text()
               }
-              println(experience)
+//              println(experience)
               val language = {
                 val lang = for {
                   i <- 1 to 5
@@ -197,7 +198,7 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
                 title,
                 updated,
                 Seq(education),
-                experience,
+                Seq(Map("experience" -> experience)),
                 language,
                 Seq(skills)
               ).toJson + "\n")
@@ -209,7 +210,7 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
                 title,
                 updated,
                 Seq(education),
-                experience,
+                Seq(Map("experience" -> experience)),
                 language,
                 Seq(skills)
               )
