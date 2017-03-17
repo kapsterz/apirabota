@@ -10,7 +10,7 @@ import akka.stream.scaladsl._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSClient
 
 import scala.collection.immutable.IndexedSeq
@@ -57,7 +57,7 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
   //    case GetFileToParse(file) => parseFile(file)
   //    case x => Logger.info("Receive unidentified massage: " + x)
   //  }
-  def parseFile(file: File): Unit = {
+  def parseFile(file: File): Future[Seq[JsObject]] = {
     val pw = new PrintWriter(new File("hello.txt"))
     Logger.info("Success recieved message for Process File. Operation start.")
     val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
@@ -227,10 +227,13 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
         }
       }.runFold(Seq.empty[ResultFileRow]) { (i, j) =>
       i :+ j
-    }.onSuccess { case result =>
+    }.map {result =>
       Logger.info("Success processed file. Start write in file hello.txt")
-      pw.close()
+
       Logger.info("Success wrote in  file hello.txt")
+        result.map{
+          _.toJson
+        }
     }
   }
 

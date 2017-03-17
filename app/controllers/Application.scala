@@ -9,13 +9,18 @@ import javax.inject._
 import actors.FileParserActor
 import actors.FileParserActor.GetFileToParse
 import akka.actor._
+import play.api.libs.json.Json
+
+import scala.concurrent.ExecutionContext
 
 
-class Application @Inject()(fileParserActor: FileParserActor) extends Controller {
-  def index = Action {
+class Application @Inject()(fileParserActor: FileParserActor)(implicit executionContext: ExecutionContext) extends Controller {
+  def index = Action.async {
     Logger.info("success send message for process file " + new File("new.txt"))
-    fileParserActor.parseFile(new File("new.txt"))
-    Ok("success")
+    val result = fileParserActor.parseFile(new File("new.txt"))
+    result.map{ f=>
+      Ok(Json.obj("all" -> f))
+    }
   }
 
 }
