@@ -28,7 +28,10 @@ class Application @Inject()(fileParserActor: FileParserActor)(implicit execution
   def index: Action[ResultFileRow] = Action.async(parse.form(userForm)) {
     implicit request =>
       Logger.info("Success received message for process json")
-      val result = fileParserActor.parseJson(request.body)
+      val xpaths = request.body.xPath.split("\t").map {
+        ResultFileRow(request.body.url, _)
+      }.toSeq
+      val result = fileParserActor.parseJson(xpaths)
       result.map { f =>
         Ok(f)
       }

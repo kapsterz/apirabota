@@ -45,30 +45,31 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
   //    case GetFileToParse(file) => parseFile(file)
   //    case x => Logger.info("Receive unidentified massage: " + x)
   //  }
-  def parseJson(file: ResultFileRow): Future[JsObject] = {
+  def parseJson(file: Seq[ResultFileRow]): Future[JsObject] = {
     Logger.info("Success recieved message for Json. Operation start.")
     val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
-    val url = file.url
-    val xPath = file.xPath
-    def recover: Future[Seq[String]] = {
+    val url = file.head.url
+    def recover: Future[Seq[Seq[String]]] = {
       val response = ws.url(url)
         .withHeaders("User-Agent" -> userAgent)
         .withFollowRedirects(true)
         .withRequestTimeout(Duration(30, SECONDS))
         .get
       response.map { resp =>
-        val body: Element = Jsoup.parse(resp.body).body
-        body.select("script").remove()
-        var elements = Seq.empty[String]
-        for {
-          _ <- 1 to body.select(xPath).size()
-        } yield {
-          Try {
-            elements = elements :+ body.select(xPath).first().toString
-            body.select(xPath).first().remove()
-          }.toOption
+        file.map { xPath =>
+          val body: Element = Jsoup.parse(resp.body).body
+          body.select("script").remove()
+          var elements = Seq.empty[String]
+          for {
+            _ <- 1 to body.select(xPath.xPath).size()
+          } yield {
+            Try {
+              elements = elements :+ body.select(xPath.xPath).first().toString
+              body.select(xPath.xPath).first().remove()
+            }.toOption
+          }
+          elements
         }
-        elements
       }
     }
 
