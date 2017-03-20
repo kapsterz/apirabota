@@ -1,15 +1,33 @@
-@(title: String)(content: Html)
-
+@import actors.FileParserActor.ResultFileRow
+@(userForm: Form[ResultFileRow])(implicit messages: Messages)
 <!DOCTYPE html>
 
 <html>
     <head>
-        <title>@title</title>
+        <title></title>
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
         <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
     </head>
     <body>
-        @content
+        <nav>
+            <a href="/">
+                <img TODO>
+            </a>
+            <h3>Perfect project</h3>
+        </nav>
+        <h1>It is perfect project</h1>
+        <h3>Please select what u need</h3>
+        @helper.form(
+            action = routes.Application.index) {
+            @helper.inputText(
+                userForm("requestUrl"),
+                'value -> "alive proxy",
+                '_label -> "Input ur URL")
+            @helper.inputText(
+                userForm("requestXPath"),
+                '_label -> "Request to parse in page")
+            <button type="submit" formmethod="post">Make request!</button>
+        }
     </body>
 </html>
