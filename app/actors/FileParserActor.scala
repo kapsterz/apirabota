@@ -58,6 +58,7 @@ class FileParserActor @Inject()(implicit exc: ExecutionContext, val materializer
         .get
       response.map { resp =>
         val body: Element = Jsoup.parse(resp.body).body
+        body.select("script").remove()
         var elements = Seq.empty[String]
         for {
           _ <- 1 to body.select(xPath).size()
